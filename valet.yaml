@@ -1,0 +1,79 @@
+name: stripe-revenue-health
+display_name: Stripe Revenue Health
+description: >-
+  Reads Stripe before the team's first standup and posts yesterday's
+  revenue health to whichever Slack channel the bot has been invited
+  to — new subs, churn, failed charges, MRR delta. @mention it any
+  time for ad-hoc revenue questions.
+category: finance
+
+story:
+  hero: "Watch MRR move without opening Stripe."
+  subheadline: >-
+    Daily revenue digest — new subs, churn, failed charges — posted
+    to your finance channel before the team's first standup.
+  steps:
+    - role: trigger
+      title: "7am hits before standup."
+      body: >-
+        The cron fires Monday through Friday at 7am Pacific. The
+        digest lands before the team starts the day.
+    - role: action
+      title: "It pulls yesterday's revenue from Stripe."
+      body: >-
+        Reads new subs, churned subs, failed charges, refunds,
+        and the MRR delta — read-only, restricted-key safe.
+      catalog: stripe-mcp
+    - role: outcome
+      title: "A bulleted digest, posted in Slack."
+      body: >-
+        Tight mrkdwn summary in every channel the bot is invited
+        to. @mention it back to dig into any number.
+      catalog: slack
+
+connectors:
+  - catalog: stripe-mcp
+    description: >-
+      The Stripe MCP server. The agent reads customers,
+      subscriptions, charges, refunds, invoices, and disputes to
+      compose the daily revenue digest and answer ad-hoc revenue
+      questions in Slack. Refunds, credits, and subscription
+      cancels only happen when a Slack user explicitly confirms
+      them in-thread.
+    ui:
+      headline: "Connect Stripe with a restricted, read-only key."
+      blurb: >-
+        Paste a Stripe Restricted Key (`rk_live_...`) with read
+        scopes on Customers, Subscriptions, Charges, Refunds,
+        Invoices, and Disputes. A live secret key (`sk_live_...`)
+        also works, but a restricted read-only key is strongly
+        recommended — it's the safest way to give the agent the
+        access it needs and nothing more.
+      done_note: "Stripe connected"
+    slot_descriptions:
+      STRIPE_SECRET_KEY: >-
+        Stripe API key — `sk_live_...` or `rk_live_...`. STRONGLY
+        recommend a Restricted Key with read-only scopes
+        (Customers, Subscriptions, Charges, Refunds, Invoices,
+        Disputes). Generate at https://dashboard.stripe.com/apikeys.
+
+channels:
+  - catalog: slack
+    description: >-
+      The agent gets its own Slack bot. Invite it to whichever
+      channels you want the daily revenue digest in (typically a
+      finance or founders channel), and to any channel where
+      teammates should be able to @mention it for ad-hoc revenue
+      questions.
+    ui:
+      headline: "Give Revenue Health a Slack bot."
+      blurb: >-
+        The agent posts the daily digest to every channel you
+        invite it to. Invite it to one focused finance channel, or
+        several — whatever matches how your team works.
+      done_note: "Bot ready — invite it to a channel"
+
+  - type: cron
+    cron: "0 7 * * 1-5"
+    timezone: America/Los_Angeles
+    description: "Fires the daily revenue digest at 7am Pacific, Monday through Friday — before the team's first standup."
