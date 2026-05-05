@@ -7,6 +7,9 @@ description: >-
   time for ad-hoc revenue questions.
 category: finance
 
+example:
+  prompt: "How's MRR tracking this week?"
+
 story:
   hero: "Watch MRR move without opening Stripe."
   subheadline: >-
